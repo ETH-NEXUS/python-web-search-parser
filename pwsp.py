@@ -122,6 +122,10 @@ def search():
     return jsonify(result)
 
 
+def gunicorn():
+    return app
+
+
 if __name__ == '__main__':
     app.run(host=env('PWSP_HOST', default='localhost'),
             port=env.int('PWSP_PORT', default=9200))
