@@ -1,0 +1,139 @@
+---
+sources:
+  - source: pubmed_api
+    target_source: pubmed
+    disabled: false
+    urls:
+      - url: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/entrez/eutils/esearch.fcgi
+        params:
+          db: pubmed
+          term: $q
+          retmode: json
+          sort: relevance
+          retmax: $max
+          usehistory: y
+      - url: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/entrez/eutils/efetch.fcgi
+        params:
+          db: pubmed
+          retmode: xml
+          retmax: $max
+          webenv: "eval(json):json['esearchresult']['webenv']"
+          query_key: "eval(json):json['esearchresult']['querykey']"
+    parse:
+      - item: "pubmedarticleset > pubmedarticle"
+        id: "first():pubmedarticle > medlinecitation > pmid"
+        title: "first():pubmedarticle > medlinecitation > article > articletitle"
+        abstract: "first():pubmedarticle > medlinecitation > article > abstract"
+        link: 'first():pubmedarticle > medlinecitation > pmid|re.sub(r"^", "https://pubmed.ncbi.nlm.nih.gov/", $)'
+        details: "first():pubmedarticle > medlinecitation > article > articledate"
+
+  - source: pmc_api
+    target_source: pubmed
+    disabled: false
+    urls:
+      - url: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/entrez/eutils/esearch.fcgi
+        params:
+          db: pmc
+          term: $q
+          retmode: json
+          sort: relevance
+          retmax: $max
+          usehistory: y
+      - url: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/entrez/eutils/efetch.fcgi
+        params:
+          db: pmc
+          retmode: xml
+          retmax: $max
+          webenv: "eval(json):json['esearchresult']['webenv']"
+          query_key: "eval(json):json['esearchresult']['querykey']"
+    parse:
+      - item: "pmc-articleset > article"
+        id: "first():article > front > article-meta > article-id[pub-id-type='pmid']"
+        title: "first():article > front > article-meta > title-group > article-title"
+        abstract: "first():article > front > article-meta > abstract"
+        link: 'first():article > front > article-meta > article-id[pub-id-type="pmc"]|re.sub(r"^", "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC", $)'
+        details: "first():article > front > article-meta > pub-date[pub-type='pmc-release']"
+
+  - source: clinvar_api
+    target_source: pubmed
+    disabled: false
+    urls:
+      - url: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/entrez/eutils/esearch.fcgi
+        params:
+          db: clinvar
+          term: $q
+          retmode: json
+          sort: relevance
+          retmax: $max
+          usehistory: y
+      - url: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/entrez/eutils/elink.fcgi
+        params:
+          db: pubmed
+          dbfrom: clinvar
+          retmode: json
+          retmax: $max
+          webenv: "eval(json):json['esearchresult']['webenv']"
+          query_key: "eval(json):json['esearchresult']['querykey']"
+      - url: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/entrez/eutils/efetch.fcgi
+        params:
+          db: pubmed
+          retmode: xml
+          retmax: $max
+          id: "eval(json):json['linksets'][0]['linksetdbs'][0]['links']"
+    parse:
+      - item: "pubmedarticleset > pubmedarticle"
+        id: "first():pubmedarticle > medlinecitation > pmid"
+        title: "first():pubmedarticle > medlinecitation > article > articletitle"
+        abstract: "first():pubmedarticle > medlinecitation > article > abstract"
+        link: 'first():pubmedarticle > medlinecitation > pmid|re.sub(r"^", "https://pubmed.ncbi.nlm.nih.gov/", $)'
+        details: "first():pubmedarticle > medlinecitation > article > articledate"
+
+  - source: pubmed
+    target_source: pubmed
+    disabled: false
+    url: https://pubmed.ncbi.nlm.nih.gov/
+    params:
+      term: $q
+      size: $max
+      sort: relevance
+    parse:
+      - item: "#search-results > section > div.search-results-chunks > div > article:nth-child(n + 2) > div.docsum-wrap > div.docsum-content"
+        id: "first():div.docsum-content > div.docsum-citation.full-citation > span:nth-child(5) > span"
+        title: "first():div.docsum-content > a"
+        abstract: "first():div.docsum-content > div.docsum-snippet > div.full-view-snippet"
+        link: 'attr(href):div.docsum-content > a|re.sub(r"^", "https://pubmed.ncbi.nlm.nih.gov", $)'
+        details: "first():div.docsum-content > div.docsum-citation.full-citation > span.docsum-journal-citation.full-journal-citation"
+      - item: "#article-details"
+        id: "first():#full-view-identifiers > li:nth-child(1) > span > strong"
+        title: "first():#full-view-heading > h1"
+        abstract: "first():#enc-abstract"
+        link: 'first():#full-view-identifiers > li:nth-child(1) > span > strong|re.sub(r"^", "https://pubmed.ncbi.nlm.nih.gov/", $)'
+        details: "first():#full-view-heading > div.article-citation > div.article-source > span.cit"
+
+  - source: pmc
+    target_source: pubmed
+    disabled: true
+    url: https://www.ncbi.nlm.nih.gov/pmc/
+    params:
+      term: $q
+    parse:
+      - item: "#maincontent > div > div:nth-child(5) > div:nth-child(n) > div.rslt"
+        id: "first():div.rslt > div:nth-child(4) > div > dl > dd"
+        title: "first():div.rslt > div.title > a"
+        abstract: null
+        link: 'attr(href):div.rslt > div.title > a|re.sub(r"^", "https://www.ncbi.nlm.nih.gov", $)'
+        details: "first():div.rslt > div.supp > div.details"
+
+  - source: google scholar
+    disabled: false
+    url: https://scholar.google.com/scholar
+    params:
+      q: $q
+      hl: en
+    parse:
+      - item: "#gs_res_ccl_mid > div:nth-child(n) > div.gs_ri"
+        id: "attr(href):div.gs_ri > h3 > a"
+        title: "first():div.gs_ri > h3 > a"
+        abstract: "first():div.gs_ri > div.gs_rs"
+        link: "attr(href):div.gs_ri > h3 > a"
+        details: "first():div.gs_ri > div.gs_a"
