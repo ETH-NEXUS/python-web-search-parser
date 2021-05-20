@@ -8,9 +8,9 @@ from timeit import default_timer as timer
 from datetime import timedelta as td
 
 from envparse import env
-from flask import jsonify, request
+from flask import jsonify, request, Flask
 from flask_cors import CORS
-from flask_api import FlaskAPI
+# from flask_api import FlaskAPI
 
 from python_web_search_parser.requester import MultistageRequester, Requester
 from python_web_search_parser.parser import Parser
@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.DEBUG)
 log.setLevel(logging.INFO)
 colorize_werkzeug()
 
-app = FlaskAPI(__name__)
+app = Flask(__name__)
 CORS(app)
 
 app.config['DEFAULT_RENDERERS'] = [
