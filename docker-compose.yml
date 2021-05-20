@@ -1,0 +1,11 @@
+version: '3.5'
+services:
+  pwsp:
+    build:
+      context: .
+    image: pwsp
+    hostname: pwsp
+    expose:
+      - '9200'
+    restart: unless-stopped
+    env_file: .env
