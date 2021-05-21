@@ -62,11 +62,13 @@ class Expander:
     def expand(cls, terms):
         # Erease multiple spaces
         terms = re.sub(r'[\s]+', ' ', terms)
+        old = []
         new = []
         for term in terms.split(' '):
             term = term.strip()
             term = term.replace('"', '').replace("'", '')
             log.debug(f"Expand: term={term}")
+            old.append(term)
             new.append(term)
             for matcher in cls.matchers:
                 match = matcher['regex'].match(term)
@@ -75,4 +77,4 @@ class Expander:
                     new += terms
                     break
             log.debug(f"Expanded: term={term}")
-        return new
+        return old, new

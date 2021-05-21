@@ -90,11 +90,11 @@ class Parser():
 
     @classmethod
     def parseHtml(cls, doc, highlight=None, parser='html.parser', source='unknown', target_source=None, item=None, id=None, title=None, link=None, abstract=None, details=None):
+        records = []
         try:
             soup = BeautifulSoup(doc, parser)
             log.debug(f"Got results from '{source}'.")
             elements = cls.__select(soup, item)
-            records = []
             for elt in elements:
                 _source = source
                 _target_source = target_source if target_source else source
@@ -109,10 +109,11 @@ class Parser():
                     rec, ['title', 'abstract'], highlight)
                 log.info(f"Record: {rec}")
                 records.append(rec)
-            return records
         except Exception as ex:
             log.error(ex)
             traceback.print_exc(file=stdout)
+        finally:
+            return records
 
     @classmethod
     def parseXml(cls, doc, **kwargs):

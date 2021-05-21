@@ -2,7 +2,7 @@ FROM python:3.9.1
 RUN pip install --upgrade pip
 RUN pip install pipenv
 WORKDIR /
-ADD . /
+COPY . /
 RUN pipenv install --system --skip-lock
 RUN pip install gunicorn[gevent]
 # TODO: remove

@@ -127,6 +127,7 @@ sources:
   - source: google scholar
     disabled: false
     url: https://scholar.google.com/scholar
+    # query_builder: google_scholar
     params:
       q: $q
       hl: en

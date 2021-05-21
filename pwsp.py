@@ -1,22 +1,21 @@
 #!/usr/bin/env python
 
 import logging
-from friendlylog import colored_logger as log
-from flask_add_ons.logging import colorize_werkzeug
-
-from timeit import default_timer as timer
 from datetime import timedelta as td
-
-from envparse import env
-from flask import jsonify, request, Flask
-from flask_cors import CORS
-# from flask_api import FlaskAPI
-
-from python_web_search_parser.requester import MultistageRequester, Requester
-from python_web_search_parser.parser import Parser
-from python_web_search_parser.expander import Expander
+from timeit import default_timer as timer
 
 import yaml
+from envparse import env
+from flask import Flask, jsonify, request
+from flask_add_ons.logging import colorize_werkzeug
+from flask_cors import CORS
+from friendlylog import colored_logger as log
+
+from python_web_search_parser.expander import Expander
+from python_web_search_parser.parser import Parser
+from python_web_search_parser.query_builder import QueryBuilderFactory
+from python_web_search_parser.requester import MultistageRequester, Requester
+
 
 logging.basicConfig(level=logging.DEBUG)
 log.setLevel(logging.INFO)
@@ -79,8 +78,8 @@ def search():
     with open(r'./pwsp.yaml') as file:
         pwsp_config = yaml.load(file, Loader=yaml.FullLoader)
     ###
-    terms = Expander.expand(request.args.get('q'))
-    query = ' '.join(list(map(lambda t: f'"{t}"' if ' ' in t else t, terms)))
+    expand = request.args.get('expand', 'true') == 'true'
+    terms, expanded_terms = Expander.expand(request.args.get('q'))
     max = request.args.get('max', 10)
     sources = request.args.get('source').split(
         ',') if request.args.get('source') else None
@@ -90,23 +89,29 @@ def search():
         if 'disabled' not in source or not source['disabled']:
             if sources is None or source['source'] in sources:
                 log.info(f"Query source {source['source']}")
-                # multistage
-                if 'urls' in source:
-                    for url in source['urls']:
-                        __fix_parameters(url['params'], query, max)
-                    doc = MultistageRequester.get(
-                        source['urls'])
-                else:
-                    __fix_parameters(source['params'], query, max)
-                    doc = Requester.get(
-                        source['url'], **source['params'])
-                for parse in source['parse']:
-                    items += Parser.parseHtml(
-                        doc,
-                        highlight=terms,
-                        source=source['source'],
-                        target_source=source['target_source'] if 'target_source' in source else None,
-                        **parse)
+                queryBuilder = QueryBuilderFactory.create(
+                    source['query_builder'] if 'query_builder' in source else 'default')
+                for query in queryBuilder.build(expanded_terms if expand else terms):
+                    # multistage
+                    if 'urls' in source:
+                        for url in source['urls']:
+                            __fix_parameters(url['params'], query, max)
+                        doc = MultistageRequester.get(
+                            source['urls'])
+                    else:
+                        __fix_parameters(source['params'], query, max)
+                        doc = Requester.get(
+                            source['url'], **source['params'])
+                    for parse in source['parse']:
+                        new_items = Parser.parseHtml(
+                            doc,
+                            highlight=terms,
+                            source=source['source'],
+                            target_source=source['target_source'] if 'target_source' in source else None,
+                            **parse)
+                        for item in new_items:
+                            item.update({'query': query})
+                        items += new_items
     log.info("Finalize...")
     result = {}
     result['source_count_details'] = __get_statistics(items, 'source')
@@ -114,8 +119,9 @@ def search():
     items = __consolidate_items(items)
     result['count'] = len(items)
     result['source_count'] = __get_statistics(items)
-    result['query'] = query
     result['terms'] = terms
+    result['expanded_terms'] = expanded_terms
+    result['expand'] = expand
     end = timer()
     result['took'] = td(seconds=end-start).total_seconds()
     result['items'] = items

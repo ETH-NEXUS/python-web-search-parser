@@ -12,6 +12,9 @@ class Requester():
     def get(url: str, **kwargs):
         log.info(f"Request url={url} args={kwargs}")
         try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'
+            }
             res = requests.get(url, params=kwargs, timeout=5)
             log.debug(f"Response code={res.status_code}")
             if res.ok:
