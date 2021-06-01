@@ -15,7 +15,7 @@ class Requester():
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'
             }
-            res = requests.get(url, params=kwargs, timeout=5)
+            res = requests.get(url, params=kwargs, timeout=5, headers=headers)
             log.debug(f"Response code={res.status_code}")
             if res.ok:
                 with open(f"{url.replace('/', '_')}.html", 'w') as f:
@@ -50,10 +50,10 @@ class MultistageRequester():
                     if action == 'eval':
                         if attributes == 'json':
                             if response:
-                                log.debug(f"response={response}")
-                                json = loads(response)
-                                log.debug(f"json={json}")
                                 try:
+                                    log.debug(f"response={response}")
+                                    json = loads(response)
+                                    log.debug(f"json={json}")
                                     content = eval(content)
                                 except Exception as ex:
                                     log.warning(

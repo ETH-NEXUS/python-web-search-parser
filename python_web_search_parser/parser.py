@@ -92,23 +92,24 @@ class Parser():
     def parseHtml(cls, doc, highlight=None, parser='html.parser', source='unknown', target_source=None, item=None, id=None, title=None, link=None, abstract=None, details=None):
         records = []
         try:
-            soup = BeautifulSoup(doc, parser)
-            log.debug(f"Got results from '{source}'.")
-            elements = cls.__select(soup, item)
-            for elt in elements:
-                _source = source
-                _target_source = target_source if target_source else source
-                _id = cls.__select(elt, id)
-                _title = cls.__select(elt, title)
-                _link = cls.__select(elt, link)
-                _abstract = cls.__select(elt, abstract)
-                _details = cls.__select(elt, details)
-                rec = cls.record(_source, _target_source, _id, _title,
-                                 _link, _abstract, _details).to_dict()
-                rec = Highlighter.highlight(
-                    rec, ['title', 'abstract'], highlight)
-                log.info(f"Record: {rec}")
-                records.append(rec)
+            if doc:
+                soup = BeautifulSoup(doc, parser)
+                log.debug(f"Got results from '{source}'.")
+                elements = cls.__select(soup, item)
+                for elt in elements:
+                    _source = source
+                    _target_source = target_source if target_source else source
+                    _id = cls.__select(elt, id)
+                    _title = cls.__select(elt, title)
+                    _link = cls.__select(elt, link)
+                    _abstract = cls.__select(elt, abstract)
+                    _details = cls.__select(elt, details)
+                    rec = cls.record(_source, _target_source, _id, _title,
+                                     _link, _abstract, _details).to_dict()
+                    rec = Highlighter.highlight(
+                        rec, ['title', 'abstract'], highlight)
+                    log.info(f"Record: {rec}")
+                    records.append(rec)
         except Exception as ex:
             log.error(ex)
             traceback.print_exc(file=stdout)
