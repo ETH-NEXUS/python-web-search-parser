@@ -2,7 +2,9 @@
 
 import logging
 from datetime import timedelta as td
+from python_web_search_parser.term_parser import TermParser
 from timeit import default_timer as timer
+from blessings import Terminal
 
 import yaml
 from envparse import env
@@ -78,8 +80,12 @@ def search():
     with open(r'./pwsp.yaml') as file:
         pwsp_config = yaml.load(file, Loader=yaml.FullLoader)
     ###
+    must_terms, optional_terms = TermParser.parse(request.args.get('q'))
+
+    must_terms, expanded_must_terms = Expander.expand(must_terms)
+    optional_terms, expanded_optional_terms = Expander.expand(optional_terms)
+
     expand = request.args.get('expand', 'true') == 'true'
-    terms, expanded_terms = Expander.expand(request.args.get('q'))
     max = request.args.get('max', 10)
     sources = request.args.get('source').split(
         ',') if request.args.get('source') else None
@@ -91,7 +97,9 @@ def search():
                 log.info(f"Query source {source['source']}")
                 queryBuilder = QueryBuilderFactory.create(
                     source['query_builder'] if 'query_builder' in source else 'default')
-                for query in queryBuilder.build(expanded_terms if expand else terms):
+                for query in queryBuilder.build(
+                        must_terms=expanded_must_terms if expand else must_terms,
+                        optional_terms=expanded_optional_terms if expand else optional_terms):
                     # multistage
                     if 'urls' in source:
                         for url in source['urls']:
@@ -105,7 +113,8 @@ def search():
                     for parse in source['parse']:
                         new_items = Parser.parseHtml(
                             doc,
-                            highlight=terms,
+                            highlight=expanded_must_terms +
+                            expanded_optional_terms if expand else must_terms + optional_terms,
                             source=source['source'],
                             target_source=source['target_source'] if 'target_source' in source else None,
                             **parse)
@@ -119,8 +128,8 @@ def search():
     items = __consolidate_items(items)
     result['count'] = len(items)
     result['source_count'] = __get_statistics(items)
-    result['terms'] = terms
-    result['expanded_terms'] = expanded_terms
+    result['terms'] = must_terms + optional_terms
+    result['expanded_terms'] = expanded_must_terms + expanded_optional_terms
     result['expand'] = expand
     end = timer()
     result['took'] = td(seconds=end-start).total_seconds()

@@ -59,12 +59,10 @@ class Expander:
     ]
 
     @classmethod
-    def expand(cls, terms):
-        # Erease multiple spaces
-        terms = re.sub(r'[\s]+', ' ', terms)
+    def expand(cls, terms: list):
         old = []
         new = []
-        for term in terms.split(' '):
+        for term in terms:
             term = term.strip()
             term = term.replace('"', '').replace("'", '')
             log.debug(f"Expand: term={term}")
