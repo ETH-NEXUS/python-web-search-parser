@@ -9,8 +9,10 @@ class Expander:
     def dna_change(term, match):
         try:
             var1 = f"{match.group('number')}{match.group('ref')}>{match.group('alt')}"
-            var2 = f"{match.group('number')}{match.group('ref')} > {match.group('alt')}"
-            return [var1, var2]
+            var2 = f"{match.group('number')}{match.group('ref')}->{match.group('alt')}"
+            var3 = f"{match.group('number')}{match.group('ref')}-->{match.group('alt')}"
+            var4 = f"{match.group('number')}{match.group('ref')}/{match.group('alt')}"
+            return [var1, var2, var3, var4]
         except KeyError as ke:
             log.warning(ke)
             return term
@@ -59,6 +61,12 @@ class Expander:
     ]
 
     @classmethod
+    def term_cleanup(cls, terms):
+        for term in terms:
+            term = re.sub(r'(^p\.|^c\.)', '', term)
+        return terms
+
+    @classmethod
     def expand(cls, terms: list):
         old = []
         new = []
@@ -73,6 +81,7 @@ class Expander:
                 if match:
                     terms = matcher['translator'](term, match)
                     new += terms
+                    new = cls.term_cleanup(new)
                     break
             log.debug(f"Expanded: term={term}")
         return old, new
