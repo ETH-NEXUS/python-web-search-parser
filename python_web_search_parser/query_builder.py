@@ -25,7 +25,7 @@ class DefaultQueryBuilder(QueryBuilder):
                 query += f"{must}"
         if optional_terms and len(optional_terms) > 0:
             optional = f" {or_op} " .join(
-                list(map(lambda t: f'"{t}"' if ' ' in t else t, optional_terms)))
+                list(map(lambda t: f'"{t}"' if any(char in t for char in [' ', '>']) else t, optional_terms)))
             if query:
                 query += f" {and_op} ({optional})"
             else:
