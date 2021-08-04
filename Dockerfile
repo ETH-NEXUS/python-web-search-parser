@@ -5,6 +5,4 @@ WORKDIR /
 COPY . /
 RUN pipenv install --system --skip-lock
 RUN pip install gunicorn[gevent]
-# TODO: remove
-EXPOSE 9200
 ENTRYPOINT [ "/entrypoint.sh" ]
