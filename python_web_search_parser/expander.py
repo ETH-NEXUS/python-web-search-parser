@@ -62,8 +62,8 @@ class Expander:
 
     @classmethod
     def term_cleanup(cls, terms):
-        for term in terms:
-            term = re.sub(r'(^p\.|^c\.)', '', term)
+        for idx, term in enumerate(terms):
+            terms[idx] = re.sub(r'(^p\.|^c\.)', '', term)
         return terms
 
     @classmethod
@@ -73,7 +73,6 @@ class Expander:
         for term in terms:
             term = term.strip()
             term = term.replace('"', '').replace("'", '')
-            log.debug(f"Expand: term={term}")
             old.append(term)
             new.append(term)
             for matcher in cls.matchers:
@@ -83,5 +82,5 @@ class Expander:
                     new += terms
                     new = cls.term_cleanup(new)
                     break
-            log.debug(f"Expanded: term={term}")
+            log.debug(f"Expanded: term={term}: {new}")
         return old, new
