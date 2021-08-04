@@ -3,7 +3,7 @@ FROM python:3.9.1
 WORKDIR /
 COPY . /
 
-RUN adduser --system user
+RUN adduser user
 USER user
 ENV PATH="$PATH:/home/user/.local/bin"
 
