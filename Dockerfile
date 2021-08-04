@@ -5,6 +5,7 @@ COPY . /
 
 RUN adduser --system user
 USER user
+ENV PATH="$PATH:/home/user/.local/bin"
 
 RUN pip install --upgrade pip
 RUN pip install pipenv
