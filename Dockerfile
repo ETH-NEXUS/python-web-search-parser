@@ -9,7 +9,4 @@ RUN pipenv install --system --skip-lock
 
 RUN pip install gunicorn[gevent]
 
-RUN adduser --system user
-USER user
-
 ENTRYPOINT [ "/entrypoint.sh" ]
