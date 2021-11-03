@@ -24,7 +24,13 @@ log.setLevel(logging.INFO)
 colorize_werkzeug()
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
+cors = CORS(app, supports_credentials=True, resources={
+    r'/api/*': {
+        'origins': '*',
+        'methods': ['GET', 'HEAD', 'POST', 'OPTIONS', 'PUT']
+    }
+})
 
 app.config['DEFAULT_RENDERERS'] = [
     'flask_api.renderers.JSONRenderer',
