@@ -83,4 +83,4 @@ class Expander:
                     new = cls.term_cleanup(new)
                     break
             log.debug(f"Expanded: term={term}: {new}")
-        return old, new
+        return old, list(set(new))
