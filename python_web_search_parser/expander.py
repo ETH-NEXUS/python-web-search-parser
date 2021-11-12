@@ -15,7 +15,7 @@ class Expander:
             return [var1, var2, var3, var4]
         except KeyError as ke:
             log.warning(ke)
-            return term
+            return [term]
 
     def protein_change_1_letter(term, match):
         aa_code = {
@@ -29,7 +29,7 @@ class Expander:
             return [f"{aa_code[match.group('prefix')]}{match.group('number')}{aa_code[match.group('postfix')]}"]
         except KeyError as ke:
             log.warning(ke)
-            return term
+            return [term]
 
     def protein_change_3_letter(term, match):
         aa_code = {
@@ -43,7 +43,7 @@ class Expander:
             return [f"{aa_code[match.group('prefix')]}{match.group('number')}{aa_code[match.group('postfix')]}"]
         except KeyError as ke:
             log.warning(ke)
-            return term
+            return [term]
 
     matchers = [
         {

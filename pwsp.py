@@ -4,7 +4,6 @@ import logging
 from datetime import timedelta as td
 from python_web_search_parser.term_parser import TermParser
 from timeit import default_timer as timer
-from blessings import Terminal
 
 import yaml
 from envparse import env
