@@ -23,7 +23,7 @@ class Expander:
             "G": "Gly", "H": "His", "I": "Ile", "K": "Lys", "L": "Leu",
             "M": "Met", "N": "Asn", "P": "Pro", "Q": "Gln", "R": "Arg",
             "S": "Ser", "T": "Thr", "V": "Val", "W": "Trp", "Y": "Tyr",
-            "*": "Ter"
+            "*": "Ter", "X": "Ter"
         }
         try:
             return [f"{aa_code[match.group('prefix')]}{match.group('number')}{aa_code[match.group('postfix')]}"]
