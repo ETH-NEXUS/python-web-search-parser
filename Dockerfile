@@ -4,8 +4,7 @@ WORKDIR /
 COPY . /
 
 RUN pip install --disable-pip-version-check --upgrade pip
-RUN pip install pipenv
-RUN pipenv install --system --skip-lock
+RUN pip install -r /requirements.txt
 
 RUN pip install gunicorn[gevent]
 
